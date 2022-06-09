@@ -1,12 +1,20 @@
-from django.db import connection
+import MySQLdb
+from SatisfactionConfiguration import secret
 
 class ClientBase():
     def connection(self):
-        self.cur = connection.cursor()
+        self.conn = MySQLdb.connect(
+            user=secret.DB_USER,
+            passwd=secret.DB_PASS,
+            host='localhost',
+            db=secret.DB_DBNAME
+        )
+        self.cur = self.conn.cursor()
 
     def conClose(self):
-        connection.close()
+        self.cur.close()
+        self.conn.close()
     
     def commitAclose(self):
-        connection.commit()
+        self.conn.commit()
         self.conClose()

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -7,22 +8,57 @@
     <title>TOP</title>
 </head>
 <body>
-    <div id="waku">
-        <input type="text"/>
-        <br>
-    </div>
-    <button type="button" onclick="clk()">+</button>
-    <br>
-    <button type="button">入れろ</button>
-    
+    <p>アプリ名</p>
+    <input type="text" id="appname"/>
+    <p>CPU</p>
+    <input type="text" id="cpu"/>
+    <p></p>
+    <button onclick="getgbfmapp()">submit</button>
+    <table>
+        <tbody id="result">
+            <tr id="thtr">
+                <th>グラボ</th>
+            </tr>
+        </tbody>
+    </table>
     <script>
-        const waku = document.getElementById("waku");
-        function clk() {
-            let inpwaku = document.createElement("input");
-            let brel = document.createElement("br");
-            inpwaku.setAttribute("type","text");
-            waku.appendChild(inpwaku);
-            waku.appendChild(brel);
+        const appnameEl = document.getElementById('appname');
+        const resulttable = document.getElementById('result');
+        const tabletitle = document.getElementById('thtr');
+        function maketable(data) {
+            while (resulttable.hasChildNodes()) {
+                resulttable.removeChild(resulttable.firstChild);
+            }
+            resulttable.appendChild(tabletitle);
+            const grabolist = data["gra_list"];
+            
+            for (let i = 0; i < grabolist.length ; i++){
+                let atr = document.createElement("tr");
+                let adatael = document.createElement("td");
+
+                let aael = document.createElement("a");
+                aael.innerText = grabolist[i]["name"];
+                aael.setAttribute("href",grabolist[i]["url"]);
+                aael.setAttribute("target","_blank");
+                aael.setAttribute("rel","noopener noreferrer");
+                adatael.appendChild(aael);
+                atr.appendChild(adatael);
+                resulttable.appendChild(atr);
+            }
+            
+        }
+        async function getgbfmapp() {
+            /* get graphics board from appname */
+            const appname = appnameEl.value;
+            console.log(appname)
+            fetch("{% url 'devicesearch:appsatgra' %}?appname="+appname)
+            .then(res=>
+                res.json()
+            ).then(data => {
+                console.log(data);
+                maketable(data);
+                }
+            );
         }
     </script>
 </body>
