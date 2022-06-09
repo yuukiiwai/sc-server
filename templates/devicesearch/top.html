@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOP</title>
+</head>
+<body>
+    <div id="waku">
+        <input type="text"/>
+        <br>
+    </div>
+    <button type="button" onclick="clk()">+</button>
+    <br>
+    <button type="button">入れろ</button>
+    
+    <script>
+        const waku = document.getElementById("waku");
+        function clk() {
+            let inpwaku = document.createElement("input");
+            let brel = document.createElement("br");
+            inpwaku.setAttribute("type","text");
+            waku.appendChild(inpwaku);
+            waku.appendChild(brel);
+        }
+    </script>
+</body>
+</html>
