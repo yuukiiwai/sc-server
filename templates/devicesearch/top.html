@@ -10,10 +10,14 @@
 <body>
     <p>アプリ名</p>
     <input type="text" id="appname"/>
-    <p>CPU</p>
+    <p>CPU 書き方 Intel Core i5-4590S</p>
     <input type="text" id="cpu"/>
     <p></p>
     <button onclick="getgbfmapp()">submit</button>
+    <div>
+        <input type="checkbox" name="lowprofile" id="lowprofile">
+        <label for="lowprofile">ロープロファイル</label>
+    </div>
     <table>
         <tbody id="result">
             <tr id="thtr">
@@ -23,6 +27,9 @@
     </table>
     <script>
         const appnameEl = document.getElementById('appname');
+        const cpuEl = document.getElementById('cpu');
+        const lowcheckEl = document.getElementById('lowprofile');
+
         const resulttable = document.getElementById('result');
         const tabletitle = document.getElementById('thtr');
         function maketable(data) {
@@ -50,8 +57,17 @@
         async function getgbfmapp() {
             /* get graphics board from appname */
             const appname = appnameEl.value;
+            const cpu = cpuEl.value;
+            const lowcheck = lowcheckEl.checked;
             console.log(appname)
-            fetch("{% url 'devicesearch:appsatgra' %}?appname="+appname)
+            url = "{% url 'devicesearch:appsatgra' %}?appname="+appname
+            if (!(cpu == "")){
+                url = url+"&cpu="+cpu
+            }
+            if(lowcheck){
+                url = url+"&lowprofile=true"
+            }
+            fetch(url)
             .then(res=>
                 res.json()
             ).then(data => {

@@ -7,7 +7,9 @@ class ClientBase():
             user=secret.DB_USER,
             passwd=secret.DB_PASS,
             host='localhost',
-            db=secret.DB_DBNAME
+            db=secret.DB_DBNAME,
+            use_unicode=True,
+            charset="utf8"
         )
         self.cur = self.conn.cursor()
 

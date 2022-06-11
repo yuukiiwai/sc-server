@@ -17,18 +17,49 @@ class getAppSat_Gra(APIView):
         
         gbs = GBSearch()
         sepres = gbs.sepOpenDirect(appname=appname)
-        rows = gbs.searchover(sepres,appname)
+        approws = gbs.searchover(sepres,appname)
         graboslist = list()
-        for row in rows:
-            graboELlist = list()
+        for approw in approws:
+            #graboELlist = list()
             grabodict = {
-                "name":row[0],
-                "url":row[1],
+                "name":approw[0],
+                "url":approw[1],
+                "lowprofile": True if approw[-1] == 1 else False
             }
-            for col in row:
-                graboELlist.append(col)
+            #for col in approw:
+            #    graboELlist.append(col)
             graboslist.append(grabodict.copy())
             #graboslist.append(graboELlist.copy())
+        
+        cpuname = request.GET.get('cpu')
+        if cpuname != None:
+            # CPU名があれば
+            cpugrrows = gbs.getmatchCPU(cpuname)
+            cpugrset = set()
+            for gr in cpugrrows:
+                cpugrset.add(gr[0])
+            
+            removelist = list()
+            for grabo in graboslist:
+                if grabo["name"] in cpugrset:
+                    pass
+                else:
+                    removelist.append(grabo)
+            
+            for grabo in removelist:
+                graboslist.remove(grabo)
+        
+        lowprofile = request.GET.get('lowprofile')
+        if lowprofile != None:
+            #ロープロファイルチェックが有れば
+            removelist = list()
+            for grabo in graboslist:
+                if not grabo["lowprofile"]:
+                    removelist.append(grabo)
+            
+            for grabo in removelist:
+                graboslist.remove(grabo)
+
         context = {
             "gra_list":graboslist
         }

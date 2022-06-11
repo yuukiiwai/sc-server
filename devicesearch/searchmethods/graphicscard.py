@@ -4,6 +4,29 @@ class GBSearch(ClientBase):
     def __init__(self):
         pass
     
+    def sepOpenDirect(self,appname:str):
+        apinum = 2
+        params = list()
+        for i in range(apinum + 1):
+            params.append(appname)
+        self.connection()
+        com = f'''
+            select exists (
+            select require_item from app_sys_require 
+            where app_sys_require.appname="{appname}"
+            and require_item="opengl"
+            ) as openglcheckexists, 
+            ( select require_item from app_sys_require 
+            where app_sys_require.appname ="{appname}" 
+            and require_item="directx") as directxcheck
+        '''
+        try:
+            self.cur.execute(com)
+            rows =self.cur.fetchall()
+            return rows[0]
+        except Exception as e:
+            print("GBSearch.sepOpenDirect \n" + str(e))
+    
     def overDirectX(self,versions:list):
         self.connection()
         inq = ""
@@ -48,29 +71,6 @@ class GBSearch(ClientBase):
         except Exception as e:
             print("GBSearch.overOpenGL \n" + str(e))
     
-    def sepOpenDirect(self,appname:str):
-        apinum = 2
-        params = list()
-        for i in range(apinum + 1):
-            params.append(appname)
-        self.connection()
-        com = f'''
-            select exists (
-            select require_item from app_sys_require 
-            where app_sys_require.appname="{appname}"
-            and require_item="opengl"
-            ) as openglcheckexists, 
-            ( select require_item from app_sys_require 
-            where app_sys_require.appname ="{appname}" 
-            and require_item="directx") as directxcheck
-        '''
-        try:
-            self.cur.execute(com)
-            rows =self.cur.fetchall()
-            return rows[0]
-        except Exception as e:
-            print("GBSearch.sepOpenDirect \n" + str(e))
-    
     def searchover(self,exist:set(),appname:str):
         #関数の辞書化
         funcdict = {
@@ -103,3 +103,21 @@ class GBSearch(ClientBase):
         value = self.getOpenGLValue(appname)
         rows = self.overOpenGL([value])
         return rows
+
+    def getmatchCPU(self,cpu:str):
+        
+        com = f'''
+        select graphicsboard.graphicsboard_name
+        from graphicsboard
+        join cpu
+        on graphicsboard.interface_gen = cpu.PCIe_gen AND graphicsboard.interface_prot = cpu.PCIe_prot_best
+        where cpu.name = "{cpu}"
+        group by graphicsboard.graphicsboard_name;
+        '''
+        self.connection()
+        try:
+            self.cur.execute(com)
+            rows = self.cur.fetchall()
+            return rows
+        except Exception as e:
+            print(e)
