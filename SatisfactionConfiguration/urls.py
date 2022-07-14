@@ -18,5 +18,5 @@ from django.urls import path,include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',include('devicesearch.urls')),
+    path('api/v1/devicesearch/',include('devicesearch.urls')),
 ]

@@ -1,22 +1,22 @@
-import MySQLdb
 from SatisfactionConfiguration import secret
+import mysql.connector as mcon
 
 class ClientBase():
+    def __init__(self):
+        self.config = {
+            'user':secret.DB_USER,
+            'passwd':secret.DB_PASS,
+            'host':secret.DB_HOST,
+            'db':secret.DB_DBNAME,
+        }
     def connection(self):
-        self.conn = MySQLdb.connect(
-            user=secret.DB_USER,
-            passwd=secret.DB_PASS,
-            host='localhost',
-            db=secret.DB_DBNAME,
-            use_unicode=True,
-            charset="utf8"
-        )
-        self.cur = self.conn.cursor()
+        self.cnx = mcon.connect(**self.config)
+        self.cur = self.cnx.cursor(prepared=True)
 
     def conClose(self):
         self.cur.close()
-        self.conn.close()
+        self.cnx.close()
     
     def commitAclose(self):
-        self.conn.commit()
-        self.conClose()
+        self.cnx.commit()
+        self.conClose() 
