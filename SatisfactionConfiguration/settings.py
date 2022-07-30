@@ -25,9 +25,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = secret.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+try:
+    from . import local
+    DEBUG = True
+except:
+    DEBUG = False
 
 ALLOWED_HOSTS = ["127.0.0.1","localhost"]
+if not DEBUG:
+    ALLOWED_HOSTS = secret.ALLOWED_HOSTS_PRO
 
 
 # Application definition
@@ -59,6 +65,9 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
 ]
+
+if not DEBUG:
+    CORS_ALLOWED_ORIGINS = secret.CORS_ALLOWED_ORIGINS_PRO
 
 ROOT_URLCONF = 'SatisfactionConfiguration.urls'
 
@@ -131,7 +140,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
+STATIC_ROOT = '/static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 

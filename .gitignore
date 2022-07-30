@@ -3,3 +3,4 @@ secret.py
 __pycache__
 db.sqlite3
 dbtest.py
+local.py
