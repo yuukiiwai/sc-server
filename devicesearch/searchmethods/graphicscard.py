@@ -10,7 +10,7 @@ class GBSearch(ClientBase):
         for i in range(apinum):
             params.append(appname)
         self.connection()
-        com = f'''
+        com = '''
             select exists (
             select require_item from app_sys_require 
             where app_sys_require.appname= ?
@@ -127,3 +127,4 @@ class GBSearch(ClientBase):
             return rows
         except Exception as e:
             print(e)
+            

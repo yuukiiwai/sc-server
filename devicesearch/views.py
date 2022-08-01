@@ -1,3 +1,6 @@
+from multiprocessing import context
+from devicesearch.searchmethods.allsearch import AllSearch
+from .searchmethods.allsearch import AllSearch
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework import status
@@ -67,5 +70,24 @@ class getAppSat_Gra(APIView):
 
         context = {
             "gra_list":graboslist
+        }
+        return Response(context,status.HTTP_200_OK)
+
+class AllApp(APIView):
+    def get(self,request,format=None):
+        aps = AllSearch()
+        apps = aps.all_app()
+        context = {
+            "apps":apps
+        }
+        print(context)
+        return Response(context,status.HTTP_200_OK)
+
+class AllGra(APIView):
+    def get(self,request,format=None):
+        grs = AllSearch()
+        gras = grs.all_gra()
+        context = {
+            "gras":gras
         }
         return Response(context,status.HTTP_200_OK)

@@ -5,5 +5,15 @@ app_name = 'devicesearch'
 
 urlpatterns = [
     path('',top),
-    path('appsatgra/',getAppSat_Gra.as_view(),name='appsatgra')
+    path('appsat/gra/',getAppSat_Gra.as_view()),
+    #path('appsat/mem/',getAppSat_Mem.as_view()),
+    path('apps/',AllApp.as_view()),
+    path('gras/',AllGra.as_view()),
 ]
+
+""" 
+appsat/gra/ ... app名からgraphicscard
+appsat/mem/ ... app名からmemory
+apps/       ... 登録アプリ名一覧
+gra/        ... 登録グラフィックカード一覧
+"""
