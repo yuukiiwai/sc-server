@@ -24,6 +24,11 @@ class getAppSat_Gra(APIView):
             grabodict = {
                 "name":approw[0],
                 "url":approw[1],
+                "manufacture":approw[2],
+                "interface":approw[3],
+                "gpu":approw[7],
+                "directx":approw[9],
+                "opengl":approw[10],
                 "lowprofile": True if approw[-1] == 1 else False
             }
             #for col in approw:
