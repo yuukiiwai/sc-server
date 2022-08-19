@@ -73,21 +73,6 @@ class GBSearch(ClientBase):
     def maxOpengl(self,vlist:list):
         vpro = [float(v) for v in vlist]
         return max(vpro)
-        #関数の辞書化
-        funcdict = {
-            "opengl":self.getOpenGLGraph,
-            "directx":self.getDirectXGraph,
-            "nvidia":self.getNVENC,
-        }
-        append_querys = list()
-        if "opengl" in exist:
-            append_querys.append(funcdict["opengl"](appname))
-        elif "directx" in exist:
-            append_querys.append(funcdict["directx"](appname))
-        elif "nvidia" in exist:
-            append_querys.append(funcdict["nvidia"](appname))
-        
-        return append_querys
 
     def overDirectX(self,version):
         attach = '''
