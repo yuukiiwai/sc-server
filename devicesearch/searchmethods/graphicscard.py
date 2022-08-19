@@ -22,7 +22,7 @@ class GBSearch(ClientBase):
         except Exception as e:
             print("GBSearch.sepOpenDirect \n" + str(e))
     
-    def maxValueinApp(self,appnames:list):
+    def allValueinApp(self,appnames:list):
         self.connection()
         fmt = ','.join(["?"]*len(appnames))
         com = '''
@@ -40,18 +40,38 @@ class GBSearch(ClientBase):
                 if tagname in processed_name:
                     continue
                 vdict_origin = {
-                    tagname:[]
+                    "tagname":tagname,
+                    "list":[]
                 }
                 for row2 in rows:
                     if tagname == row2[0]:
-                        vdict_origin[tagname].append(row2[1])
+                        vdict_origin["list"].append(row2[1])
                 return_list.append(vdict_origin.copy())
                 processed_name.append(row[0])
-
+            print("return_list")
+            print(return_list)
             return return_list
         except Exception as e:
             print(e)
     
+    def _searchover(self,vlist:list):
+        append_querys = list()
+        print("vlist")
+        print(vlist)
+        for v in vlist:
+            if v["tagname"] == "directx":
+                dxv = self.maxDirectX(v["list"])
+                append_querys.append(self.overDirectX(dxv))
+            elif v["tagname"] == "opengl":
+                ogv = self.maxOpengl(v["list"])
+                append_querys.append(self.overOpenGL(ogv))
+            elif v["tagname"] == "nvenc":
+                nvv = self.maxNvenc(v["list"])
+                append_querys.append(self.overNVENC(nvv))
+        print("app query ")
+        print(append_querys)
+        return append_querys
+
     def maxDirectX(self,directxlist):
         self.connection()
         fmt = ','.join(["?"]*len(directxlist))
@@ -66,16 +86,15 @@ class GBSearch(ClientBase):
         except Exception as e:
             print(e)
 
-    def maxTypeV(self,vlist:list):
-        return max(vlist)
+    def maxNvenc(self,vlist:list):
+        vpro = [int(v) for v in vlist]
+        return max(vpro)
+    
+    def maxOpengl(self,vlist:list):
+        vpro = [float(v) for v in vlist]
+        return max(vpro)
 
-    def maxOpengl(self,opengllist):
-        return max(opengllist)
-
-    def maxNvenc(self,nvenclist):
-        return max(nvenclist)
-
-    def searchover(self,exist:list(),appname:str):
+    def searchover(self,exist:list,appname:str):
         #関数の辞書化
         funcdict = {
             "opengl":self.getOpenGLGraph,
@@ -111,42 +130,28 @@ class GBSearch(ClientBase):
         directxcom = self.overDirectX([value])
         return directxcom
 
-    def overDirectX(self,versions:list):
-        fmt = ','.join(['?'] * len(versions))
-
+    def overDirectX(self,version):
         attach = '''
         join directxrank
         on graphicsboard.directx = directxrank.directx_version
         ''' 
         where = '''
-        directxrank.ranknum >=
-        (select max(directxrank.ranknum) from directxrank
-        where directxrank.directx_version in (%s)
-        )'''% fmt
+        directxrank.ranknum >= ?
+        '''
         return{
             "attach":attach,
             "where":where,
-            "value":versions
+            "value":[version]
         }
     
-    def overOpenGL(self,versions:list):
-        self.connection()
-        declist = list()
-        retdict = dict()
-        maxv = 0
-        for version in versions:
-            declist.append(float(version))
-        for dec in declist:
-            if maxv < dec:
-                maxv = dec
-        
+    def overOpenGL(self,version):
         where = '''
         graphicsboard.opengl >= ?
         '''
         retdict = {
             "attach":"",
             "where":where,
-            "value":[maxv]
+            "value":[version]
         }
         return retdict
         
@@ -185,7 +190,7 @@ class GBSearch(ClientBase):
         nvenccom = self.overNVENC([value])
         return nvenccom
     
-    def overNVENC(self,versions:list):
+    def overNVENC(self,version):
         attach = '''
         join nvidia_gpu 
         on nvidia_gpu.gpu_name = graphicsboard.gpu
@@ -197,8 +202,9 @@ class GBSearch(ClientBase):
         retdict = {
             "attach":attach,
             "where":where,
-            "value":versions
+            "value":[version]
         }
+        return retdict
 
     def exe(self,com:str,value:list):
         self.connection()
