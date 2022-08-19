@@ -14,62 +14,55 @@ def top(request):
 class getAppSat_Gra(APIView):
 
     def get(self,request,format=None):
-        appname = request.GET.get('appname')
+        appnames = request.GET.getlist('appname[]')
         if appname == None:
             return Response(status=status.HTTP_200_OK)
-        
+        appname = appnames[0]
         gbs = GBSearch()
-        sepres = gbs.sepOpenDirect(appname=appname)
-        approws = gbs.searchover(sepres,appname)
-        graboslist = list()
-        for approw in approws:
-            #graboELlist = list()
-            grabodict = {
-                "name":approw[0],
-                "url":approw[1],
-                "manufacture":approw[2],
-                "interface":approw[3],
-                "gpu":approw[7],
-                "directx":approw[9],
-                "opengl":approw[10],
-                "lowprofile": True if approw[-1] == 1 else False
-            }
-            #for col in approw:
-            #    graboELlist.append(col)
-            graboslist.append(grabodict.copy())
-            #graboslist.append(graboELlist.copy())
+        req_item = gbs.sepOpenDirect(appname=appname)
+        req_item_ = gbs.maxValueinApp(appnames = appnames)
+        grabo_que_list = gbs.searchover(req_item,appname)
+        com = 'select * from graphicsboard '
+        where = "where 1 = 1 "
+        paralist=list()
+        for que in grabo_que_list:
+            com += que["attach"]
+            where += " and " + que["where"]
+            paralist += que["value"]
         
         cpuname = request.GET.get('cpu')
         if cpuname != None:
             # CPU名があれば
-            cpugrrows = gbs.getmatchCPU(cpuname)
-            cpugrset = set()
-            for gr in cpugrrows:
-                cpugrset.add(gr[0])
-            
-            removelist = list()
-            for grabo in graboslist:
-                if grabo["name"] in cpugrset:
-                    pass
-                else:
-                    removelist.append(grabo)
-            
-            for grabo in removelist:
-                graboslist.remove(grabo)
+            cpugrque = gbs.getmatchCPU(cpuname)
+            com += cpugrque["attach"]
+            where += " and " + cpugrque["where"]
+            paralist += cpugrque["value"]
         
         lowprofile = request.GET.get('lowprofile')
         if lowprofile != None:
             #ロープロファイルチェックが有れば
-            removelist = list()
-            for grabo in graboslist:
-                if not grabo["lowprofile"]:
-                    removelist.append(grabo)
-            
-            for grabo in removelist:
-                graboslist.remove(grabo)
+            lowproque = gbs.getLowprofile()
+            com += lowproque["attach"]
+            where += " and " + lowproque["where"]
+            paralist += lowproque["value"]
 
+        rows = gbs.exe(com=com+where,value=paralist)
+        grabolist = list()
+        for row in rows:
+            grabodict = {
+                    "name":row[0],
+                    "url":row[1],
+                    "manufacture":row[2],
+                    "interface":row[3],
+                    "gpu":row[7],
+                    "directx":row[9],
+                    "opengl":row[10],
+                    "lowprofile": True if row[-1] == 1 else False
+                }
+            grabolist.append(grabodict)
+        
         context = {
-            "gra_list":graboslist
+            "gra_list":grabolist
         }
         return Response(context,status.HTTP_200_OK)
 

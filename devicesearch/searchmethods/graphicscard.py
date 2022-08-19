@@ -5,34 +5,97 @@ class GBSearch(ClientBase):
         super().__init__()
     
     def sepOpenDirect(self,appname:str):
-        apinum = 2
-        params = list()
-        for i in range(apinum):
-            params.append(appname)
         self.connection()
+        retlist = list()
         com = '''
-            select exists (
-            select require_item from app_sys_require 
-            where app_sys_require.appname= ?
-            and require_item="opengl"
-            ) as openglcheckexists, 
-            exists ( select require_item from app_sys_require 
-            where app_sys_require.appname = ?
-            and require_item="directx") as directxcheck
+            select require_item from app_sys_require_gra 
+            where app_sys_require_gra.appname= ?
         '''
         print(com)
         try:
-            self.cur.execute(com,params)
+            self.cur.execute(com,[appname,])
             rows =self.cur.fetchall()
-            print(rows)
-            return rows[0]
+            # 1列目だけ得る
+            retlist = [row[0] for row in rows]
+            print(retlist)
+            return retlist
         except Exception as e:
             print("GBSearch.sepOpenDirect \n" + str(e))
+    
+    def maxValueinApp(self,appnames:list):
+        self.connection()
+        fmt = ','.join(["?"]*len(appnames))
+        com = '''
+            select require_item,require_value from app_sys_require_gra
+            where app_sys_require_gra.appname in (%s)
+            order by require_item
+        ''' % fmt
+        try:
+            self.cur.execute(com,appnames)
+            rows = self.cur.fetchall()
+            processed_name = list()
+            return_list = list()
+            for row in rows:
+                tagname = row[0]
+                if tagname in processed_name:
+                    continue
+                vdict_origin = {
+                    tagname:[]
+                }
+                for row2 in rows:
+                    if tagname == row2[0]:
+                        vdict_origin[tagname].append(row2[1])
+                return_list.append(vdict_origin.copy())
+                processed_name.append(row[0])
+
+            return return_list
+        except Exception as e:
+            print(e)
+    
+    def maxDirectX(self,directxlist):
+        self.connection()
+        fmt = ','.join(["?"]*len(directxlist))
+        com = '''
+        select max(directxrank.ranknum) from directxrank
+        where directxrank.directx_version in (%s);
+        ''' % fmt
+        try:
+            self.cur.execute(com,directxlist)
+            rows = self.cur.fetchall()
+            return rows[0][0]
+        except Exception as e:
+            print(e)
+
+    def maxTypeV(self,vlist:list):
+        return max(vlist)
+
+    def maxOpengl(self,opengllist):
+        return max(opengllist)
+
+    def maxNvenc(self,nvenclist):
+        return max(nvenclist)
+
+    def searchover(self,exist:list(),appname:str):
+        #関数の辞書化
+        funcdict = {
+            "opengl":self.getOpenGLGraph,
+            "directx":self.getDirectXGraph,
+            "nvidia":self.getNVENC,
+        }
+        append_querys = list()
+        if "opengl" in exist:
+            append_querys.append(funcdict["opengl"](appname))
+        elif "directx" in exist:
+            append_querys.append(funcdict["directx"](appname))
+        elif "nvidia" in exist:
+            append_querys.append(funcdict["nvidia"](appname))
+        
+        return append_querys
     
     def getAppValue(self,valuetype:str,appname:str):
         self.connection()
         com = '''
-            select app_sys_require.require_value from app_sys_require
+            select app_sys_require_gra.require_value from app_sys_require_gra
             where require_item = ? and appname = ?
             '''
         try:
@@ -45,86 +108,106 @@ class GBSearch(ClientBase):
 
     def getDirectXGraph(self,appname:str):
         value = self.getAppValue(valuetype="directx",appname=appname)
-        rows = self.overDirectX([value])
-        return rows
+        directxcom = self.overDirectX([value])
+        return directxcom
 
     def overDirectX(self,versions:list):
-        self.connection()
         fmt = ','.join(['?'] * len(versions))
 
-        com = '''
-        select * from graphicsboard
+        attach = '''
         join directxrank
         on graphicsboard.directx = directxrank.directx_version
-        where directxrank.ranknum >=
+        ''' 
+        where = '''
+        directxrank.ranknum >=
         (select max(directxrank.ranknum) from directxrank
         where directxrank.directx_version in (%s)
-        )
-        ''' % fmt
-        print(com)
-        try:
-            self.cur.execute(com,versions)
-            rows = self.cur.fetchall()
-            return rows
-        except Exception as e:
-            print("GBSearch.overDirectX \n" + str(e))
+        )'''% fmt
+        return{
+            "attach":attach,
+            "where":where,
+            "value":versions
+        }
     
     def overOpenGL(self,versions:list):
         self.connection()
         declist = list()
-        max = 0
+        retdict = dict()
+        maxv = 0
         for version in versions:
             declist.append(float(version))
         for dec in declist:
-            if max < dec:
-                max = dec
+            if maxv < dec:
+                maxv = dec
         
-        com = f'''
-        select * from graphicsboard
-        where graphicsboard.opengl >= {max}
+        where = '''
+        graphicsboard.opengl >= ?
         '''
-        try:
-            self.cur.execute(com)
-            rows = self.cur.fetchall()
-            return rows
-        except Exception as e:
-            print("GBSearch.overOpenGL \n" + str(e))
-    
-    def searchover(self,exist:set(),appname:str):
-        #関数の辞書化
-        funcdict = {
-            0:self.getOpenGLGraph,
-            1:self.getDirectXGraph,
+        retdict = {
+            "attach":"",
+            "where":where,
+            "value":[maxv]
         }
-        i = 0
-        resultover = dict()
-        for col in exist:
-            if col == 1:
-                resultover = funcdict[i](appname)
-                print(i)
-            i += 1
-        return resultover
-    
+        return retdict
+        
     def getOpenGLGraph(self,appname:str):
         value = self.getAppValue(valuetype="opengl",appname=appname)
-        rows = self.overOpenGL([value])
-        return rows
+        openglcom = self.overOpenGL([value])
+        return openglcom
 
     def getmatchCPU(self,cpu:str):
         
-        com = '''
-        select graphicsboard.graphicsboard_name
-        from graphicsboard
+        attach = '''
         join cpu
         on graphicsboard.interface_gen = cpu.PCIe_gen AND graphicsboard.interface_prot = cpu.PCIe_prot_best
-        where cpu.name = ?
-        group by graphicsboard.graphicsboard_name;
         '''
+        where = '''
+        cpu.name = ?
+        '''
+        return{
+            "attach":attach,
+            "where":where,
+            "value":[cpu]
+        }
+    
+    def getLowprofile(self):
+        where = '''
+        graphicsboard.lowprofile = 1
+        '''
+        return {
+            "attach":"",
+            "where":where,
+            "value":[]
+        }
+    
+    def getNVENC(self,appname:str):
+        value = self.getAppValue(valuetype="nvenc",appname=appname)
+        nvenccom = self.overNVENC([value])
+        return nvenccom
+    
+    def overNVENC(self,versions:list):
+        attach = '''
+        join nvidia_gpu 
+        on nvidia_gpu.gpu_name = graphicsboard.gpu
+        '''
+        where = '''
+        nvidia_gpu.nvenc_gen >= ?
+        '''
+
+        retdict = {
+            "attach":attach,
+            "where":where,
+            "value":versions
+        }
+
+    def exe(self,com:str,value:list):
         self.connection()
+        print("last")
+        print(com)
+        print(value)
         try:
-            self.cur.execute(com,(cpu,))
+            self.cur.execute(com,value)
             rows = self.cur.fetchall()
             return rows
         except Exception as e:
             print(e)
-            

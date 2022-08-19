@@ -4,3 +4,5 @@ __pycache__
 db.sqlite3
 dbtest.py
 local.py
+testsearch.txt
+.ev
