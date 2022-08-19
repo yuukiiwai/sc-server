@@ -4,24 +4,6 @@ class GBSearch(ClientBase):
     def __init__(self):
         super().__init__()
     
-    def sepOpenDirect(self,appname:str):
-        self.connection()
-        retlist = list()
-        com = '''
-            select require_item from app_sys_require_gra 
-            where app_sys_require_gra.appname= ?
-        '''
-        print(com)
-        try:
-            self.cur.execute(com,[appname,])
-            rows =self.cur.fetchall()
-            # 1列目だけ得る
-            retlist = [row[0] for row in rows]
-            print(retlist)
-            return retlist
-        except Exception as e:
-            print("GBSearch.sepOpenDirect \n" + str(e))
-    
     def allValueinApp(self,appnames:list):
         self.connection()
         fmt = ','.join(["?"]*len(appnames))
@@ -48,16 +30,14 @@ class GBSearch(ClientBase):
                         vdict_origin["list"].append(row2[1])
                 return_list.append(vdict_origin.copy())
                 processed_name.append(row[0])
-            print("return_list")
-            print(return_list)
+            #print("return_list")
+            #print(return_list)
             return return_list
         except Exception as e:
             print(e)
     
     def _searchover(self,vlist:list):
         append_querys = list()
-        print("vlist")
-        print(vlist)
         for v in vlist:
             if v["tagname"] == "directx":
                 dxv = self.maxDirectX(v["list"])
@@ -93,8 +73,6 @@ class GBSearch(ClientBase):
     def maxOpengl(self,vlist:list):
         vpro = [float(v) for v in vlist]
         return max(vpro)
-
-    def searchover(self,exist:list,appname:str):
         #関数の辞書化
         funcdict = {
             "opengl":self.getOpenGLGraph,
@@ -110,25 +88,6 @@ class GBSearch(ClientBase):
             append_querys.append(funcdict["nvidia"](appname))
         
         return append_querys
-    
-    def getAppValue(self,valuetype:str,appname:str):
-        self.connection()
-        com = '''
-            select app_sys_require_gra.require_value from app_sys_require_gra
-            where require_item = ? and appname = ?
-            '''
-        try:
-            self.cur.execute(com,(valuetype,appname,))
-            rows = self.cur.fetchall()
-            value = rows[0][0]
-            return value
-        except Exception as e:
-            print(e)
-
-    def getDirectXGraph(self,appname:str):
-        value = self.getAppValue(valuetype="directx",appname=appname)
-        directxcom = self.overDirectX([value])
-        return directxcom
 
     def overDirectX(self,version):
         attach = '''
@@ -155,11 +114,6 @@ class GBSearch(ClientBase):
         }
         return retdict
         
-    def getOpenGLGraph(self,appname:str):
-        value = self.getAppValue(valuetype="opengl",appname=appname)
-        openglcom = self.overOpenGL([value])
-        return openglcom
-
     def getmatchCPU(self,cpu:str):
         
         attach = '''
@@ -174,21 +128,6 @@ class GBSearch(ClientBase):
             "where":where,
             "value":[cpu]
         }
-    
-    def getLowprofile(self):
-        where = '''
-        graphicsboard.lowprofile = 1
-        '''
-        return {
-            "attach":"",
-            "where":where,
-            "value":[]
-        }
-    
-    def getNVENC(self,appname:str):
-        value = self.getAppValue(valuetype="nvenc",appname=appname)
-        nvenccom = self.overNVENC([value])
-        return nvenccom
     
     def overNVENC(self,version):
         attach = '''
@@ -206,6 +145,16 @@ class GBSearch(ClientBase):
         }
         return retdict
 
+    def getLowprofile(self):
+        where = '''
+        graphicsboard.lowprofile = 1
+        '''
+        return {
+            "attach":"",
+            "where":where,
+            "value":[]
+        }
+    
     def exe(self,com:str,value:list):
         self.connection()
         print("last")

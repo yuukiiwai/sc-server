@@ -17,12 +17,9 @@ class getAppSat_Gra(APIView):
         appnames = request.GET.getlist('appname[]')
         if appnames == None:
             return Response(status=status.HTTP_200_OK)
-        appname = appnames[0]
         gbs = GBSearch()
-        #req_item = gbs.sepOpenDirect(appname=appname)
         req_item_ = gbs.allValueinApp(appnames = appnames)
         grabo_que_list_ = gbs._searchover(req_item_)
-        #grabo_que_list = gbs.searchover(req_item,appname)
         com = 'select * from graphicsboard '
         where = "where 1 = 1 "
         paralist=list()
