@@ -13,7 +13,8 @@ class AllSearch(ClientBase):
 
 
     def all_app(self):
-        com = 'select distinct appname from app_sys_require;'
+        # !!! only gra !!! have to check!
+        com = 'select distinct appname from app_sys_require_gra;'
         value = self.valueSelect(com)
         return value
     
