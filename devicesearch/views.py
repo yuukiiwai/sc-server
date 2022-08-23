@@ -44,7 +44,19 @@ class getAppSat_Gra(APIView):
             where += " and " + lowproque["where"]
             paralist += lowproque["value"]
 
-        rows = gbs.exe(com=com+where,value=paralist)
+        if where != "where 1 = 1 ":
+            rows = gbs.exe(com=com+where,value=paralist)
+            grabolist = self.gbpackaging(rows=rows)
+        else:
+            grabolist = list()
+        
+        context = {
+            "message" : "Sorry" if len(grabolist) == 0 else "Thank",
+            "gra_list":grabolist
+        }
+        return Response(context,status.HTTP_200_OK)
+    
+    def gbpackaging(self,rows):
         grabolist = list()
         for row in rows:
             grabodict = {
@@ -58,11 +70,7 @@ class getAppSat_Gra(APIView):
                     "lowprofile": True if row[-1] == 1 else False
                 }
             grabolist.append(grabodict)
-        
-        context = {
-            "gra_list":grabolist
-        }
-        return Response(context,status.HTTP_200_OK)
+        return grabolist
 
 class AllApp(APIView):
     def get(self,request,format=None):
@@ -80,5 +88,24 @@ class AllGra(APIView):
         gras = grs.all_gra()
         context = {
             "gras":gras
+        }
+        return Response(context,status.HTTP_200_OK)
+
+class Recommend(APIView):
+    def __init__(self):
+        super()
+        self.rdic = {
+            "g1":" select graphicsboard.* from graphicsboard join nvidia_gpu on nvidia_gpu.gpu_name = graphicsboard.gpu order by nvidia_gpu.nvidia_rank desc",
+            "g2":" select graphicsboard.* from graphicsboard where opengl >= 4.5 order by opengl desc"
+        }
+    def get(self,request,format=None):
+        rtype = request.GET.get("t")
+        rmode = request.GET.get("r")
+        sql = self.rdic[rtype+rmode]
+        gbs = GBSearch()
+        rows = gbs.exe(sql,[])
+        gblist = getAppSat_Gra().gbpackaging(rows=rows)
+        context = {
+            "gra_list":gblist
         }
         return Response(context,status.HTTP_200_OK)

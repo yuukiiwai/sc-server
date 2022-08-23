@@ -9,6 +9,7 @@ urlpatterns = [
     #path('appsat/mem/',getAppSat_Mem.as_view()),
     path('apps/',AllApp.as_view()),
     path('gras/',AllGra.as_view()),
+    path('recommend/',Recommend.as_view()),
 ]
 
 """ 
@@ -16,4 +17,5 @@ appsat/gra/ ... app名からgraphicscard
 appsat/mem/ ... app名からmemory
 apps/       ... 登録アプリ名一覧
 gra/        ... 登録グラフィックカード一覧
+recommend/  ... おすすめ
 """
