@@ -3,9 +3,9 @@ from .clientbase import ClientBase
 class GBSearch(ClientBase):
     def __init__(self):
         super().__init__()
+        self.connection()
     
     def allValueinApp(self,appnames:list):
-        self.connection()
         fmt = ','.join(["?"]*len(appnames))
         com = '''
             select require_item,require_value from app_sys_require_gra
@@ -53,7 +53,6 @@ class GBSearch(ClientBase):
         return append_querys
 
     def maxDirectX(self,directxlist):
-        self.connection()
         fmt = ','.join(["?"]*len(directxlist))
         com = '''
         select max(directxrank.ranknum) from directxrank
@@ -141,7 +140,6 @@ class GBSearch(ClientBase):
         }
     
     def exe(self,com:str,value:list):
-        self.connection()
         print("last")
         print(com)
         print(value)
@@ -151,3 +149,6 @@ class GBSearch(ClientBase):
             return rows
         except Exception as e:
             print(e)
+
+    def end(self):
+        self.conClose()

@@ -24,7 +24,9 @@ class AllSearch(ClientBase):
             self.cur.execute(com)
             rows = self.cur.fetchall()
             value = [ row[0] for row in rows]
+            self.conClose()
             return value
         except Exception as e:
             print(e)
+            self.conClose()
             return None

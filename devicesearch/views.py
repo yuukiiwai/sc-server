@@ -54,6 +54,9 @@ class getAppSat_Gra(APIView):
             "message" : "Sorry" if len(grabolist) == 0 else "Thank",
             "gra_list":grabolist
         }
+
+        gbs.end()
+
         return Response(context,status.HTTP_200_OK)
     
     def gbpackaging(self,rows):
@@ -95,8 +98,8 @@ class Recommend(APIView):
     def __init__(self):
         super()
         self.rdic = {
-            "g1":" select graphicsboard.* from graphicsboard join nvidia_gpu on nvidia_gpu.gpu_name = graphicsboard.gpu order by nvidia_gpu.nvidia_rank desc",
-            "g2":" select graphicsboard.* from graphicsboard where opengl >= 4.5 order by opengl desc"
+            "g1":" select graphicsboard.* from graphicsboard join nvidia_gpu on nvidia_gpu.gpu_name = graphicsboard.gpu order by nvidia_gpu.nvidia_rank desc limit 20",
+            "g2":" select graphicsboard.* from graphicsboard where opengl >= 4.5 order by opengl desc limit 20"
         }
     def get(self,request,format=None):
         rtype = request.GET.get("t")
@@ -108,4 +111,5 @@ class Recommend(APIView):
         context = {
             "gra_list":gblist
         }
+        gbs.end()
         return Response(context,status.HTTP_200_OK)
