@@ -15,10 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
-from .setview import robots
+from .setview import robots,sslaccept
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/devicesearch/',include('devicesearch.urls')),
-    path('robots.txt',robots)
+    path('robots.txt',robots),
+    path('.well-known/pki-validation/236f9aea9d639cee6a61b04b04c6d1b5.txt',sslaccept)
 ]
