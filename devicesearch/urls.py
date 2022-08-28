@@ -6,6 +6,7 @@ app_name = 'devicesearch'
 urlpatterns = [
     path('',top),
     path('appsat/gra/',getAppSat_Gra.as_view()),
+    path('appsat/gra/<id>',getGra.as_view()),
     #path('appsat/mem/',getAppSat_Mem.as_view()),
     path('apps/',AllApp.as_view()),
     path('gras/',AllGra.as_view()),

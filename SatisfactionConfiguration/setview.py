@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 
 def robots(request):
     return render(request=request,template_name='robots.txt',content_type='text/plain')

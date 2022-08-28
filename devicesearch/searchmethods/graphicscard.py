@@ -150,5 +150,19 @@ class GBSearch(ClientBase):
         except Exception as e:
             print(e)
 
+    def getDetail(self,id:int):
+        com = '''
+        select graphicsboard_name,url,manufacture,interface,interface_gen,interface_shape,interface_prot,gpu,gpu_manufacture,directx,opengl,lowprofile,image_url
+        from graphicsboard
+        where id = ?
+        '''
+        try:
+            self.cur.execute(com,[id])
+            # 1データだけが取られるはずなので、[0]指定
+            rows = self.cur.fetchall()[0]
+            return rows
+        except Exception as e:
+            print(e)
+
     def end(self):
         self.conClose()
