@@ -8,3 +8,6 @@ def sslaccept(request):
 
 def home(request):
     return render(request=request,template_name='index.html')
+
+def sitemap(request):
+    return render(request,"sitemap.xml")
