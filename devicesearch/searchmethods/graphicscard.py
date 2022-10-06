@@ -48,6 +48,12 @@ class GBSearch(ClientBase):
             elif v["tagname"] == "nvenc":
                 nvv = self.maxNvenc(v["list"])
                 append_querys.append(self.overNVENC(nvv))
+            elif v["tagnage"] == "nvidia_name":
+                nvName = self.maxNvidiaName(v["list"])
+                append_querys.append(self.overNvidiaName(nvName))
+            elif v["tagname"] == "memory_capaG":
+                memcG = self.maxMemcapa(v["list"])
+                append_querys.append(self.overMemcap(memcG))
         print("app query ")
         print(append_querys)
         return append_querys
@@ -72,6 +78,23 @@ class GBSearch(ClientBase):
     def maxOpengl(self,vlist:list):
         vpro = [float(v) for v in vlist]
         return max(vpro)
+
+    def maxNvidiaName(self,namelist:list):
+        fmt = ','.join(["?"]*len(namelist))
+        com = '''
+        select max(nvidia_gpu.nvidia_rank) from nvidia_gpu
+        where nvidia_gpu.gpu_name in (%s);
+        ''' % fmt
+        try:
+            self.cur.execute(com,namelist)
+            rows = self.cur.fetchall()
+            return rows[0][0]
+        except Exception as e:
+            print(e)
+
+    def maxMemcapa(self,clist:list):
+        capa = [int(c) for c in clist]
+        return max(capa)
 
     def overDirectX(self,version):
         attach = '''
@@ -98,6 +121,30 @@ class GBSearch(ClientBase):
         }
         return retdict
         
+    def overNvidiaName(self,version):
+        attach = '''
+        join nvidia_gpu
+        on graphicsboard.gpu = nvidia_gpu.gpu_name
+        '''
+        where = '''
+        nvidia_gpu.nvidia_rank >= ?
+        '''
+        return{
+            "attach":attach,
+            "where":where,
+            "value":[version]
+        }
+
+    def overMemcap(self,capa):
+        where = '''
+        graphicsboard.memory_capaG >= ?
+        '''
+        return {
+            "attach":"",
+            "where":where,
+            "value":[capa]
+        }
+
     def getmatchCPU(self,cpu:str):
         
         attach = '''
@@ -128,7 +175,7 @@ class GBSearch(ClientBase):
             "value":[version]
         }
         return retdict
-
+    
     def getLowprofile(self):
         where = '''
         graphicsboard.lowprofile = 1
