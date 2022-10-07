@@ -48,7 +48,7 @@ class GBSearch(ClientBase):
             elif v["tagname"] == "nvenc":
                 nvv = self.maxNvenc(v["list"])
                 append_querys.append(self.overNVENC(nvv))
-            elif v["tagnage"] == "nvidia_name":
+            elif v["tagname"] == "nvidia_name":
                 nvName = self.maxNvidiaName(v["list"])
                 append_querys.append(self.overNvidiaName(nvName))
             elif v["tagname"] == "memory_capaG":
